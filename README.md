@@ -20,10 +20,12 @@ python3 -m unittest discover -s tests -v
 - 规模：200×200 地图、100 个单位、半径 20，每帧更新 0.5 秒内完成，内存 O(地图格数 + 单位数)；
   不许每个单位都重算整张地图的遮挡。
 
-## 现在的行为
+## 实现要点
 
-- `visible` 只判断切比雪夫距离，完全没有读墙体信息。
-- `update` 只做 `current |= visible(...)`：旧视野永远留在集合里。
+- `visible` 只扫描单位半径内的格子，逐格按「采样连线 + 墙体阻挡」判定：
+  线段与墙列的交点落在非门口的墙格上则不可见，墙格本身与门口不受影响。
+- `update` 既加也删：结果等于当前单位集合一次性计算的并集，
+  单位走开或消失后，只由它贡献的格子随之移除。
 - `behind_wall_count` 是诊断用的对照函数，用来量化「墙后可见」的格子数。
 
 ## 计划新增的能力
@@ -36,8 +38,8 @@ python3 -m unittest discover -s tests -v
 ## 输出
 
 ```
-visible=63 behind_wall=0
-first=63 second=25 stale=0
+visible=55 behind_wall=0
+first=55 second=12 stale=0
 ```
 
 ## 目录
